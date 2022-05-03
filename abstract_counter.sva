@@ -1,0 +1,37 @@
+module checker_m(
+	input[31:0] count,
+	input clock,
+	input decrement,
+	input empty,
+	input full,
+	input increment,
+	input reset
+);
+
+
+default clocking default_clk @(posedge clock); endclocking
+
+ast_full: assert property (disable iff (reset)
+	count == abstract_counter.QUEUE_SIZE |-> ##1 full
+	);
+ast_empty: assert property (disable iff (reset)
+	count == 32'b0 |-> ##1 empty
+	);
+ast_not_full: assert property (disable iff (reset)
+	count < abstract_counter.QUEUE_SIZE |-> ##1 !full
+	);	
+ast_not_empty: assert property (disable iff (reset)
+	count > 1'b0 |-> ##1 !empty
+	);	
+
+endmodule
+
+bind abstract_counter checker_m checker_inst (
+	.count(count),
+	.clock(clock),
+	.decrement(decrement),
+	.empty(empty),
+	.full(full),
+	.increment(increment),
+	.reset(reset)
+);
